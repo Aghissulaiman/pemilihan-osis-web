@@ -6,6 +6,7 @@ import StatsCards from "../component/admin/StatsCards"
 import ChartHasilPemilihan from "../component/admin/ChartHasilPemilihan"
 import TabelKandidat from "../component/admin/TabelKandidat"
 import ModalTambahKandidat from "../component/admin/ModalTambahKandidat"
+import UsersTable from "../component/admin/UsersTable"
 
 export default function DashboardPage() {
     const [activeMenu, setActiveMenu] = useState("dashboard")
@@ -49,6 +50,11 @@ export default function DashboardPage() {
                     {activeMenu === "kandidat" && (
                         <TabelKandidat onTambah={() => setModalOpen(true)} />
                     )}
+
+                    {activeMenu === "users" && (
+    <UsersTable />
+)}
+
                 </div>
             </main>
 

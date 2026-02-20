@@ -5,6 +5,7 @@ import { useState } from "react"
 const menuItems = [
     { id: "dashboard", label: "Dashboard", icon: "📊" },
     { id: "kandidat", label: "Kandidat", icon: "👥" },
+    { id: "users", label: "Users", icon: "🧑‍🎓" },
 ]
 
 export default function Sidebar({ activeMenu, setActiveMenu }) {
