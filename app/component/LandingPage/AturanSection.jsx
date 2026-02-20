@@ -2,14 +2,14 @@
 
 import { useReveal } from "../../hooks/useReveal"
 import { aturan } from "../../lib/data/landingData"
+import { motion } from "framer-motion"
 
 export default function AturanSection() {
     const { ref, visible } = useReveal()
 
     return (
-        <section id="aturan" className="py-24 px-6 md:px-12 max-w-6xl mx-auto">
+        <motion.section id="aturan" initial={{ opacity: 0, y: 80 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: "easeOut" }} viewport={{ once: true }}className="py-24 px-6 md:px-12 max-w-6xl mx-auto">
             <div ref={ref}>
-                {/* Heading */}
                 <div
                     className={`
             text-center mb-14
@@ -29,7 +29,6 @@ export default function AturanSection() {
                     </p>
                 </div>
 
-                {/* Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {aturan.map((a, i) => (
                         <div
@@ -49,6 +48,6 @@ export default function AturanSection() {
                     ))}
                 </div>
             </div>
-        </section>
+        </motion.section>
     )
 }

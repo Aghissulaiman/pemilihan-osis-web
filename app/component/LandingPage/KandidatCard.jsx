@@ -19,22 +19,17 @@ export default function KandidatCard({ k, delay }) {
       `}
             style={{ transitionDelay: visible ? `${delay}ms` : "0ms" }}
         >
-            {/* Color top bar */}
             <div className={`h-1.5 w-full bg-gradient-to-r ${k.warna}`} />
 
-            {/* Photo area */}
             <div className="relative w-full h-52 bg-slate-800/60 flex items-center justify-center overflow-hidden">
-                {/* Ganti dengan <Image src={k.foto} fill className="object-cover" alt={k.nama} /> jika foto tersedia */}
                 <div className={`w-24 h-24 rounded-full bg-gradient-to-br ${k.warna} flex items-center justify-center shadow-xl`}>
                     <span className="text-4xl">👤</span>
                 </div>
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent" />
             </div>
 
-            {/* Info */}
             <div className="flex flex-col flex-1 p-5 gap-3">
 
-                {/* Badge + Nama + Kelas */}
                 <div>
                     <span className={`text-[11px] font-medium px-2.5 py-0.5 rounded-full border ${k.badge}`}>
                         Kandidat {k.id}
@@ -48,13 +43,11 @@ export default function KandidatCard({ k, delay }) {
                     <p className="text-slate-400 text-xs mt-0.5">{k.kelas}</p>
                 </div>
 
-                {/* Visi */}
                 <div>
                     <p className="text-[11px] uppercase tracking-widest text-slate-500 mb-1">Visi</p>
                     <p className="text-slate-300 text-sm leading-relaxed">{k.visi}</p>
                 </div>
 
-                {/* Misi toggle */}
                 <div>
                     <button
                         onClick={() => setBuka(!buka)}
@@ -77,7 +70,6 @@ export default function KandidatCard({ k, delay }) {
                     </div>
                 </div>
 
-                {/* Tombol Pilih */}
                 <button
                     className={`
             mt-auto w-full py-2.5 rounded-xl text-sm font-semibold tracking-wide text-white

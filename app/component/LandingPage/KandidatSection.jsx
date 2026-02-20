@@ -3,15 +3,15 @@
 import { useReveal } from "../../hooks/useReveal"
 import { kandidat } from "../../lib/data/landingData"
 import KandidatCard from "../LandingPage/KandidatCard"
+import { motion } from "framer-motion"
 
 export default function KandidatSection() {
     const { ref, visible } = useReveal()
 
     return (
-        <section id="kandidat" className="py-24 px-6 md:px-12 bg-slate-900/40">
+        <motion.section id="kandidat" initial={{ opacity: 0, y: 80 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: "easeOut" }} viewport={{ once: true }}className="py-24 px-6 md:px-12 bg-slate-900/40">
             <div className="max-w-6xl mx-auto">
 
-                {/* Heading */}
                 <div ref={ref}>
                     <div
                         className={`
@@ -33,7 +33,6 @@ export default function KandidatSection() {
                     </div>
                 </div>
 
-                {/* Cards Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {kandidat.map((k, i) => (
                         <KandidatCard key={k.id} k={k} delay={i * 120} />
@@ -41,6 +40,6 @@ export default function KandidatSection() {
                 </div>
 
             </div>
-        </section>
+        </motion.section>
     )
 }
