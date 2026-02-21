@@ -51,32 +51,26 @@ export const kandidat = [
 
 export const aturan = [
   {
-    icon: "🗳️",
     judul: "Satu Suara per Siswa",
     isi: "Setiap siswa hanya dapat memberikan satu suara selama periode pemilihan berlangsung.",
   },
   {
-    icon: "📅",
     judul: "Periode Pemilihan",
     isi: "Pemilihan dibuka pada 10–15 Februari 2026. Suara tidak dapat diubah setelah dikonfirmasi.",
   },
   {
-    icon: "🔐",
     judul: "Kerahasiaan Terjamin",
     isi: "Identitas pemilih dan pilihan suara dijaga kerahasiaannya. Proses voting bersifat anonim.",
   },
   {
-    icon: "✅",
     judul: "Syarat Pemilih",
     isi: "Hanya siswa aktif dengan NISN terdaftar yang dapat mengikuti proses pemilihan.",
   },
   {
-    icon: "⚠️",
     judul: "Dilarang Kampanye Liar",
     isi: "Segala bentuk kampanye di luar jadwal resmi atau tekanan kepada pemilih adalah pelanggaran.",
   },
   {
-    icon: "📢",
     judul: "Pengumuman Hasil",
     isi: "Hasil pemilihan akan diumumkan secara resmi pada 17 Februari 2026 di aula sekolah.",
   },

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Image from "next/image"
+import Link from "next/link"
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -136,9 +137,11 @@ export default function LoginPage() {
             </div>
 
             {/* Masuk */}
+            <Link href="/home">
             <button className="w-full py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-400 hover:to-blue-600 text-white text-sm font-semibold tracking-wide shadow-lg shadow-blue-700/40 hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200">
               Masuk
             </button>
+            </Link>
           </div>
 
           {/* Footer */}

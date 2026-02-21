@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useReveal } from "../../hooks/useReveal"
-import VoteModal from "../LandingPage/VoteModal"
+import VoteModal from "./VoteModal"
 
 export default function KandidatCard({ k, delay }) {
     const [buka, setBuka] = useState(false)
