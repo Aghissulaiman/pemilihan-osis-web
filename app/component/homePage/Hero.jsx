@@ -13,7 +13,7 @@ export default function HeroSection() {
               Pilih Pemimpin
             </span>
             <span className="block text-4xl md:text-5xl lg:text-6xl font-bold text-blue-600">
-              Masa Depan SMKA Taruna Bhakti
+              Masa Depan SMK Taruna Bhakti
             </span>
           </h1>
 
@@ -26,17 +26,17 @@ export default function HeroSection() {
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
             <Link 
-              href="/kandidat" 
+              href="#kandidat" 
               className="px-8 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200 shadow-md hover:shadow-lg"
             >
               Lihat Kandidat
             </Link>
             
             <Link 
-              href="/informasi" 
+              href="#informasi" 
               className="px-8 py-3 border-2 border-blue-600 text-blue-600 font-medium rounded-lg hover:bg-blue-50 transition-colors duration-200"
             >
-              Informasi Pemilihan
+              Aturan Pemilihan
             </Link>
           </div>
 
