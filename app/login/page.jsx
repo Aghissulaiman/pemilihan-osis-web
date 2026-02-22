@@ -2,16 +2,81 @@
 
 import { useState, useEffect } from "react"
 import Image from "next/image"
-import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { supabase } from "../../lib/supabase"
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [nisn, setNisn] = useState("")
+  const [nipd, setNipd] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
+  const router = useRouter()
 
   useEffect(() => {
     const t = setTimeout(() => setMounted(true), 50)
     return () => clearTimeout(t)
   }, [])
+
+  const handleLogin = async (e) => {
+    e.preventDefault()
+    setError("")
+    setLoading(true)
+
+    try {
+      // Validasi input tidak kosong
+      if (!nisn || !nipd) {
+        throw new Error("NISN dan NIPD harus diisi")
+      }
+
+      // Cek user di database berdasarkan NISN dan NIPD
+      const { data: user, error: userError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('nisn', nisn)
+        .eq('nipd', nipd)
+        .single()
+
+      if (userError) {
+        console.error('Error detail:', userError)
+        throw new Error("NISN atau NIPD tidak ditemukan")
+      }
+
+      if (!user) {
+        throw new Error("User tidak ditemukan")
+      }
+
+      // Simpan data user ke localStorage atau session
+      localStorage.setItem('user', JSON.stringify({
+        id: user.id,
+        nisn: user.nisn,
+        nipd: user.nipd,
+        role: user.role
+      }))
+
+      // Redirect berdasarkan role
+      switch (user.role) {
+        case 'admin':
+          router.push('/dashboard')
+          break
+        case 'guru':
+          router.push('/home')
+          break
+        case 'siswa':
+          router.push('/home')
+          break
+        default:
+          router.push('/home')
+      }
+
+    } catch (err) {
+      setError(err.message)
+      console.error('Login error:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden">
@@ -101,48 +166,63 @@ export default function LoginPage() {
             <span className="flex-1 h-px bg-white/15" />
           </div>
 
-          {/* Form */}
-          <div
-            className={`
-              space-y-3
-              transition-all duration-500 delay-300
-              ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"}
-            `}
-          >
-            {/* NISN */}
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-300/55 text-sm select-none pointer-events-none"></span>
-              <input
-                type="text"
-                placeholder="Nomor Induk Siswa (NISN)"
-                className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm bg-white/10 border border-white/20 text-white placeholder:text-blue-200/40 focus:outline-none focus:ring-2 focus:ring-blue-400/40 focus:border-blue-400/50 focus:bg-white/15 transition duration-200"
-              />
+          {/* Error Message */}
+          {error && (
+            <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-xl text-red-200 text-sm">
+              {error}
             </div>
+          )}
 
-            {/* Password */}
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-300/55 text-sm select-none pointer-events-none"></span>
-              <input
-                type={showPassword ? "text" : "password"}
-                placeholder="Kata Sandi"
-                className="w-full pl-9 pr-10 py-2.5 rounded-xl text-sm bg-white/10 border border-white/20 text-white placeholder:text-blue-200/40 focus:outline-none focus:ring-2 focus:ring-blue-400/40 focus:border-blue-400/50 focus:bg-white/15 transition duration-200"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-blue-300/55 hover:text-blue-200 transition text-sm"
+          {/* Form */}
+          <form onSubmit={handleLogin}>
+            <div
+              className={`
+                space-y-3
+                transition-all duration-500 delay-300
+                ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"}
+              `}
+            >
+              {/* NISN */}
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Nomor Induk Siswa (NISN)"
+                  value={nisn}
+                  onChange={(e) => setNisn(e.target.value)}
+                  className="w-full pl-4 pr-4 py-2.5 rounded-xl text-sm bg-white/10 border border-white/20 text-white placeholder:text-blue-200/40 focus:outline-none focus:ring-2 focus:ring-blue-400/40 focus:border-blue-400/50 focus:bg-white/15 transition duration-200"
+                  disabled={loading}
+                />
+              </div>
+
+              {/* NIPD */}
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="NIPD"
+                  value={nipd}
+                  onChange={(e) => setNipd(e.target.value)}
+                  className="w-full pl-4 pr-10 py-2.5 rounded-xl text-sm bg-white/10 border border-white/20 text-white placeholder:text-blue-200/40 focus:outline-none focus:ring-2 focus:ring-blue-400/40 focus:border-blue-400/50 focus:bg-white/15 transition duration-200"
+                  disabled={loading}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-blue-300/55 hover:text-blue-200 transition text-sm"
+                >
+                  {showPassword ? "🙈" : "👁"}
+                </button>
+              </div>
+
+              {/* Tombol Masuk */}
+              <button 
+                type="submit"
+                disabled={loading}
+                className="w-full py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-400 hover:to-blue-600 text-white text-sm font-semibold tracking-wide shadow-lg shadow-blue-700/40 hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
               >
-                {showPassword ? "🙈" : "👁"}
+                {loading ? "Memproses..." : "Masuk"}
               </button>
             </div>
-
-            {/* Masuk */}
-            <Link href="/home">
-            <button className="w-full py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-400 hover:to-blue-600 text-white text-sm font-semibold tracking-wide shadow-lg shadow-blue-700/40 hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200">
-              Masuk
-            </button>
-            </Link>
-          </div>
+          </form>
 
           {/* Footer */}
           <div
