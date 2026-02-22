@@ -26,11 +26,11 @@ export function middleware(request) {
   // Halaman login
   const isLoginPage = path === '/login'
   
-  // Halaman home (untuk siswa & guru)
-  const isHomePage = path === '/home'
+  // Semua halaman di dalam folder home (termasuk sub-halaman)
+  const isHomePath = path.startsWith('/home')
   
-  // Halaman dashboard (khusus admin)
-  const isDashboardPage = path.startsWith('/dashboard')
+  // Semua halaman di dalam folder dashboard (termasuk sub-halaman)
+  const isDashboardPath = path.startsWith('/dashboard')
   
   // ============================================
   // KONDISI 1: TIDAK ADA USER (BELUM LOGIN)
@@ -74,35 +74,38 @@ export function middleware(request) {
   
   // Jika user adalah SISWA
   if (user.role === 'siswa') {
-    // Siswa HANYA boleh akses halaman home
-    if (!isHomePage) {
-      // Jika mencoba akses selain home (termasuk dashboard), tampilkan 404
-      return NextResponse.rewrite(new URL('/404', request.url))
+    // Siswa boleh akses SEMUA halaman di dalam folder /home
+    // Contoh: /home, /home/profile, /home/settings, dll
+    if (isHomePath) {
+      return NextResponse.next()
     }
-    // Jika akses home, lanjutkan
-    return NextResponse.next()
+    
+    // Jika mencoba akses selain folder home (termasuk dashboard), tampilkan 404
+    return NextResponse.rewrite(new URL('/404', request.url))
   }
   
   // Jika user adalah GURU
   if (user.role === 'guru') {
-    // Guru HANYA boleh akses halaman home
-    if (!isHomePage) {
-      // Jika mencoba akses selain home (termasuk dashboard), tampilkan 404
-      return NextResponse.rewrite(new URL('/404', request.url))
+    // Guru boleh akses SEMUA halaman di dalam folder /home
+    // Contoh: /home, /home/profile, /home/settings, dll
+    if (isHomePath) {
+      return NextResponse.next()
     }
-    // Jika akses home, lanjutkan
-    return NextResponse.next()
+    
+    // Jika mencoba akses selain folder home (termasuk dashboard), tampilkan 404
+    return NextResponse.rewrite(new URL('/404', request.url))
   }
   
   // Jika user adalah ADMIN
   if (user.role === 'admin') {
-    // Admin HANYA boleh akses halaman dashboard
-    if (!isDashboardPage) {
-      // Jika mencoba akses selain dashboard (termasuk home), tampilkan 404
-      return NextResponse.rewrite(new URL('/404', request.url))
+    // Admin boleh akses SEMUA halaman di dalam folder /dashboard
+    // Contoh: /dashboard, /dashboard/users, /dashboard/settings, dll
+    if (isDashboardPath) {
+      return NextResponse.next()
     }
-    // Jika akses dashboard, lanjutkan
-    return NextResponse.next()
+    
+    // Jika mencoba akses selain folder dashboard (termasuk home), tampilkan 404
+    return NextResponse.rewrite(new URL('/404', request.url))
   }
   
   // Fallback: jika role tidak dikenal, redirect ke landing page
