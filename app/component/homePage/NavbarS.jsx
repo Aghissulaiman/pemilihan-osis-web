@@ -94,7 +94,7 @@ export default function Navbar() {
             {profileOpen && (
               <div className="absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
                 <Link
-                  href="/profile"
+                  href="/home/profile"
                   className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 transition"
                   onClick={() => setProfileOpen(false)}
                 >
@@ -102,7 +102,7 @@ export default function Navbar() {
                 </Link>
 
                 <Link
-                  href="/riwayat"
+                  href="/home/riwayat"
                   className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 transition"
                   onClick={() => setProfileOpen(false)}
                 >
