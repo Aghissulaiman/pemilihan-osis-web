@@ -47,27 +47,25 @@ export default function LoginPage() {
         throw new Error("User tidak ditemukan")
       }
 
-      // Simpan data user ke localStorage atau session
-      localStorage.setItem('user', JSON.stringify({
+      // Simpan data user ke cookie dengan format yang benar
+      const userData = {
         id: user.id,
         nisn: user.nisn,
         nipd: user.nipd,
         role: user.role
-      }))
+      }
+
+      // Set cookie dengan path yang benar dan httpOnly false (untuk client)
+      document.cookie = `user=${JSON.stringify(userData)}; path=/; max-age=${60 * 60 * 24 * 7}`; // 7 hari
+
+      // Simpan juga ke localStorage sebagai backup
+      localStorage.setItem('user', JSON.stringify(userData))
 
       // Redirect berdasarkan role
-      switch (user.role) {
-        case 'admin':
-          router.push('/dashboard')
-          break
-        case 'guru':
-          router.push('/home')
-          break
-        case 'siswa':
-          router.push('/home')
-          break
-        default:
-          router.push('/home')
+      if (user.role === 'admin') {
+        router.push('/dashboard')
+      } else {
+        router.push('/home')
       }
 
     } catch (err) {
@@ -80,7 +78,6 @@ export default function LoginPage() {
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden">
-
       {/* Background */}
       <Image
         src="/sekolah.png"
@@ -114,7 +111,7 @@ export default function LoginPage() {
       {/* Centered layout */}
       <div className="relative z-20 flex items-center justify-center min-h-screen px-4 py-8">
 
-        {/* Card — max-w-sm = compact, not stretched */}
+        {/* Card */}
         <div
           className={`
             w-full max-w-sm
@@ -162,7 +159,7 @@ export default function LoginPage() {
           {/* Divider */}
           <div className="flex items-center gap-2 mb-4">
             <span className="flex-1 h-px bg-white/15" />
-            <span className="text-white/30 text-[10px] uppercase tracking-widest">Login Siswa</span>
+            <span className="text-white/30 text-[10px] uppercase tracking-widest">Login</span>
             <span className="flex-1 h-px bg-white/15" />
           </div>
 
@@ -191,10 +188,11 @@ export default function LoginPage() {
                   onChange={(e) => setNisn(e.target.value)}
                   className="w-full pl-4 pr-4 py-2.5 rounded-xl text-sm bg-white/10 border border-white/20 text-white placeholder:text-blue-200/40 focus:outline-none focus:ring-2 focus:ring-blue-400/40 focus:border-blue-400/50 focus:bg-white/15 transition duration-200"
                   disabled={loading}
+                  required
                 />
               </div>
 
-              {/* NIPD */}
+              {/* NIPD (Password) */}
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
@@ -203,6 +201,7 @@ export default function LoginPage() {
                   onChange={(e) => setNipd(e.target.value)}
                   className="w-full pl-4 pr-10 py-2.5 rounded-xl text-sm bg-white/10 border border-white/20 text-white placeholder:text-blue-200/40 focus:outline-none focus:ring-2 focus:ring-blue-400/40 focus:border-blue-400/50 focus:bg-white/15 transition duration-200"
                   disabled={loading}
+                  required
                 />
                 <button
                   type="button"
@@ -217,7 +216,7 @@ export default function LoginPage() {
               <button 
                 type="submit"
                 disabled={loading}
-                className="w-full py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-400 hover:to-blue-600 text-white text-sm font-semibold tracking-wide shadow-lg shadow-blue-700/40 hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+                className="w-full py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-400 hover:to-blue-600 text-white text-sm font-semibold tracking-wide shadow-lg shadow-blue-700/40 hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? "Memproses..." : "Masuk"}
               </button>
