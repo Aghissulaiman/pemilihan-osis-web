@@ -3,12 +3,15 @@
 import { useState, useEffect, useRef } from "react";
 import { Menu, X, User, LogOut, Settings, History } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [user, setUser] = useState(null);
   const profileRef = useRef(null);
+  const router = useRouter();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -21,6 +24,34 @@ export default function Navbar() {
       }
     };
 
+    // Ambil data user dari cookie atau localStorage
+    const getUserData = () => {
+      // Cek dari cookie dulu
+      const cookies = document.cookie.split(';');
+      const userCookie = cookies.find(c => c.trim().startsWith('user='));
+      
+      if (userCookie) {
+        try {
+          const userData = JSON.parse(userCookie.split('=')[1]);
+          setUser(userData);
+        } catch (e) {
+          console.error('Error parsing user cookie:', e);
+        }
+      } else {
+        // Fallback ke localStorage
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          try {
+            const userData = JSON.parse(storedUser);
+            setUser(userData);
+          } catch (e) {
+            console.error('Error parsing localStorage user:', e);
+          }
+        }
+      }
+    };
+
+    getUserData();
     window.addEventListener("scroll", handleScroll);
     document.addEventListener("mousedown", handleClickOutside);
 
@@ -40,6 +71,30 @@ export default function Navbar() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      // Hapus cookie user
+      document.cookie = 'user=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+      
+      // Hapus dari localStorage
+      localStorage.removeItem('user');
+      
+      // Hapus dari sessionStorage (jika ada)
+      sessionStorage.removeItem('user');
+      
+      // Reset state
+      setUser(null);
+      setProfileOpen(false);
+      setOpen(false);
+      
+      // Redirect ke landing page
+      router.push('/');
+      
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
   const links = [
     { name: "Beranda", href: "#home" },
     { name: "Panduan", href: "#panduan" },
@@ -55,7 +110,7 @@ export default function Navbar() {
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-        {/* Logo - SAMA PERSIS DENGAN LANDING */}
+        {/* Logo */}
         <a
           href="#home"
           onClick={(e) => handleScrollTo(e, "#home")}
@@ -81,14 +136,14 @@ export default function Navbar() {
             </a>
           ))}
 
-          {/* Profile Dropdown - Menggantikan Login Button dengan styling yang sama */}
+          {/* Profile Dropdown */}
           <div className="relative" ref={profileRef}>
             <button
               onClick={() => setProfileOpen(!profileOpen)}
               className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-full font-medium hover:bg-blue-700 transition-all duration-300 shadow-md hover:shadow-blue-500/30"
             >
               <User size={18} />
-              Profil
+              {user ? user.nisn : "Profil"}
             </button>
 
             {profileOpen && (
@@ -110,20 +165,20 @@ export default function Navbar() {
                 </Link>
 
                 <Link
-                  href="/pengaturan"
+                  href="/home/pengaturan"
                   className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 transition"
                   onClick={() => setProfileOpen(false)}
                 >
                   <Settings size={16} /> Pengaturan
                 </Link>
 
-                <Link
-                  href="/login"
+                {/* Tombol Logout dengan fungsi handleLogout */}
+                <button
+                  onClick={handleLogout}
                   className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition border-t"
-                  onClick={() => setProfileOpen(false)}
                 >
                   <LogOut size={16} /> Logout
-                </Link>
+                </button>
               </div>
             )}
           </div>
@@ -138,7 +193,7 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* Mobile Menu - SAMA PERSIS DENGAN LANDING TAPI FITURNYA DIGANTI */}
+      {/* Mobile Menu */}
       <div
         className={`md:hidden absolute w-full bg-white shadow-lg transition-all duration-300 ${
           open ? "top-full opacity-100" : "top-[-500px] opacity-0"
@@ -162,7 +217,7 @@ export default function Navbar() {
           </div>
 
           <Link
-            href="/profile"
+            href="/home/profile"
             className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition px-4 py-2"
             onClick={() => setOpen(false)}
           >
@@ -171,7 +226,7 @@ export default function Navbar() {
           </Link>
 
           <Link
-            href="/riwayat"
+            href="/home/riwayat"
             className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition px-4 py-2"
             onClick={() => setOpen(false)}
           >
@@ -180,7 +235,7 @@ export default function Navbar() {
           </Link>
 
           <Link
-            href="/pengaturan"
+            href="/home/pengaturan"
             className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition px-4 py-2"
             onClick={() => setOpen(false)}
           >
@@ -188,12 +243,17 @@ export default function Navbar() {
             Pengaturan
           </Link>
 
-          <Link href="/login">
-            <button className="w-full flex items-center justify-center gap-2 bg-red-600 text-white px-4 py-3 rounded-full font-medium hover:bg-red-700 transition shadow-md mt-4">
-              <LogOut size={18} />
-              Logout
-            </button>
-          </Link>
+          {/* Tombol Logout untuk Mobile */}
+          <button
+            onClick={() => {
+              handleLogout();
+              setOpen(false);
+            }}
+            className="w-full flex items-center justify-center gap-2 bg-red-600 text-white px-4 py-3 rounded-full font-medium hover:bg-red-700 transition shadow-md mt-4"
+          >
+            <LogOut size={18} />
+            Logout
+          </button>
         </div>
       </div>
     </nav>
