@@ -7,6 +7,7 @@ import { motion } from "framer-motion"
 export default function AturanSection() {
     const { ref, visible } = useReveal()
 
+
     return (
         <motion.section id="aturan" initial={{ opacity: 0, y: 80 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: "easeOut" }} viewport={{ once: true }}className="py-24 px-6 md:px-12 max-w-6xl mx-auto">
             <div ref={ref}>
