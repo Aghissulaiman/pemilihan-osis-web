@@ -46,13 +46,6 @@ export default function Footer() {
                         </p>
                     </div>
                 </div>
-                
-                {/* Garis bawah */}
-                <div className="border-t border-gray-100 mt-8 pt-4 text-center">
-                    <p className="text-[10px] text-slate-400">
-                        Dibuat dengan ❤️ untuk OSIS SMK Taruna Bhakti Contoh
-                    </p>
-                </div>
             </div>
         </footer>
     )
