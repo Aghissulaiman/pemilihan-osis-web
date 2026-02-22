@@ -1,9 +1,16 @@
 // components/HeroSection.jsx
-import Link from 'next/link';
+"use client";
+
+const handleScrollTo = (id) => {
+  const el = document.getElementById(id);
+  if (el) {
+    el.scrollIntoView({ behavior: "smooth" });
+  }
+};
 
 export default function HeroSection() {
   return (
-    <section className="bg-white py-30 px-4">
+    <section id="home" className="bg-white py-30 px-4">
       <div className="container mx-auto max-w-6xl">
         <div className="text-center space-y-8">
      
@@ -25,19 +32,19 @@ export default function HeroSection() {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-            <Link 
-              href="#kandidat" 
+            <button
+              onClick={() => handleScrollTo("kandidat")}
               className="px-8 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200 shadow-md hover:shadow-lg"
             >
               Lihat Kandidat
-            </Link>
+            </button>
             
-            <Link 
-              href="#informasi" 
+            <button
+              onClick={() => handleScrollTo("panduan")}
               className="px-8 py-3 border-2 border-blue-600 text-blue-600 font-medium rounded-lg hover:bg-blue-50 transition-colors duration-200"
             >
               Aturan Pemilihan
-            </Link>
+            </button>
           </div>
 
           {/* Optional: Simple decoration line */}

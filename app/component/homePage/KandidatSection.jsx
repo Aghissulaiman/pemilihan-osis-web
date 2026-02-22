@@ -1,12 +1,14 @@
 "use client"
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { kandidat } from "../../lib/data/landingData"
 
 const VotingSystem = () => {
   const [showDetailPopUp, setShowDetailPopUp] = useState(false);
   const [showConfirmPopUp, setShowConfirmPopUp] = useState(false);
   const [selectedKandidat, setSelectedKandidat] = useState(null);
+  const router = useRouter();
 
   const handleVoteClick = (kandidat) => {
     setSelectedKandidat(kandidat);
@@ -29,13 +31,13 @@ const VotingSystem = () => {
   };
 
   const handleFinalConfirm = () => {
-    alert(`Terima kasih! Suara Anda untuk ${selectedKandidat.nama} telah direkam.`);
     setShowConfirmPopUp(false);
     setSelectedKandidat(null);
+    router.push("/vote-success");
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div id="kandidat" className="min-h-screen bg-gray-50">
       {/* Header dengan desain premium */}
       <div className="relative bg-white overflow-hidden">
         {/* Decorative elements */}

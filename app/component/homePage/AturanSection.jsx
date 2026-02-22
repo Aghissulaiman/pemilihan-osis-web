@@ -22,7 +22,7 @@ export default function AturanSection() {
     }
 
     return (
-        <section id="aturan" className="py-28 px-6 md:px-12 bg-[#fafafa] overflow-hidden">
+        <section id="panduan" className="py-28 px-6 md:px-12 bg-[#fafafa] overflow-hidden">
             <div className="max-w-6xl mx-auto relative">
                 
                 {/* Background Decor */}

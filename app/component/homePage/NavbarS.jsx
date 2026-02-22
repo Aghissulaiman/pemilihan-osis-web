@@ -30,6 +30,15 @@
       };
     }, []);
 
+    const handleScrollTo = (e, href) => {
+      e.preventDefault();
+      const id = href.replace("#", "");
+      const el = document.getElementById(id);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth" });
+      }
+    };
+
     const links = [
       { name: "Beranda", href: "#home" },
       { name: "Panduan", href: "#panduan" },
@@ -47,6 +56,7 @@
           {/* Logo */}
           <a
             href="#home"
+            onClick={(e) => handleScrollTo(e, "#home")}
             className={`text-2xl font-bold transition ${
               scrolled ? "text-blue-600" : "text-white"
             }`}
@@ -60,6 +70,7 @@
               <a
                 key={link.name}
                 href={link.href}
+                onClick={(e) => handleScrollTo(e, link.href)}
                 className={`font-medium transition ${
                   scrolled
                     ? "text-gray-700 hover:text-blue-600"
@@ -107,11 +118,12 @@
                     <Settings size={16} /> Pengaturan
                   </Link>
 
-                  <button
+                  <Link
+                  href="/login"
                     className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition border-t"
                   >
                     <LogOut size={16} /> Logout
-                  </button>
+                  </Link>
                 </div>
               )}
             </div>

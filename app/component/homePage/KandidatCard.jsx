@@ -1,18 +1,71 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { useReveal } from "../../hooks/useReveal"
 import VoteModal from "./VoteModal"
 
 export default function KandidatCard({ k, delay }) {
     const [buka, setBuka] = useState(false)
     const [showModal, setShowModal] = useState(false)
+    const [showConfirm, setShowConfirm] = useState(false)
     const { ref, visible } = useReveal()
+    const router = useRouter()
+
+    const handleVoteClick = () => {
+        setShowConfirm(true)
+    }
+
+    const handleYakin = () => {
+        setShowConfirm(false)
+        router.push("/vote-success")
+    }
+
+    const handleBatal = () => {
+        setShowConfirm(false)
+    }
 
     return (
         <>
             {showModal && (
                 <VoteModal kandidat={k} onClose={() => setShowModal(false)} />
+            )}
+
+            {/* Konfirmasi Modal */}
+            {showConfirm && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+                    <div className="bg-slate-900 border border-white/10 rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden">
+                        <div className={`h-1.5 w-full bg-gradient-to-r ${k.warna}`} />
+                        <div className="flex flex-col items-center gap-4 p-8 text-center">
+                            <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${k.warna} flex items-center justify-center shadow-xl`}>
+                                <span className="text-3xl">👤</span>
+                            </div>
+                            <div>
+                                <h2 className="text-white text-xl font-bold" style={{ fontFamily: "Georgia, serif" }}>
+                                    Sudah yakin ingin memilih ini?
+                                </h2>
+                                <p className="text-slate-400 text-sm mt-2">Kamu akan memberikan suara untuk</p>
+                                <p className="text-white font-semibold text-base mt-1">{k.nama}</p>
+                                <p className="text-slate-400 text-xs mt-0.5">{k.kelas}</p>
+                            </div>
+                            <div className="w-full h-px bg-white/10" />
+                            <div className="flex gap-3 w-full">
+                                <button
+                                    onClick={handleBatal}
+                                    className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-slate-300 bg-white/10 hover:bg-white/20 transition-all duration-200"
+                                >
+                                    Batal
+                                </button>
+                                <button
+                                    onClick={handleYakin}
+                                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold text-white ${k.warnaBtn} transition-all duration-200 hover:-translate-y-0.5 shadow-lg`}
+                                >
+                                    Yakin
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             )}
 
             <div
@@ -78,7 +131,7 @@ export default function KandidatCard({ k, delay }) {
                     </div>
 
                     <button
-                        onClick={() => setShowModal(true)}
+                        onClick={handleVoteClick}
                         className={`
                             mt-auto w-full py-2.5 rounded-xl text-sm font-semibold tracking-wide text-white
                             ${k.warnaBtn} active:scale-[0.98]
