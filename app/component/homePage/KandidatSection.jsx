@@ -1,14 +1,47 @@
 "use client"
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { kandidat } from "../../lib/data/landingData"
+import { supabase } from "@/lib/supabase"
 
 const VotingSystem = () => {
   const [showDetailPopUp, setShowDetailPopUp] = useState(false);
   const [showConfirmPopUp, setShowConfirmPopUp] = useState(false);
   const [selectedKandidat, setSelectedKandidat] = useState(null);
+  const [kandidat, setKandidat] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const router = useRouter();
+
+  // Fetch data dari Supabase
+  useEffect(() => {
+    const fetchKandidat = async () => {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from('kandidat')
+          .select('*')
+          .order('no_kandidat', { ascending: true });
+
+        if (error) throw error;
+
+        // Format misi dari string ke array (karena di database misi disimpan sebagai text)
+        const formattedData = data.map(item => ({
+          ...item,
+          misi: item.misi.split('\n').filter(m => m.trim() !== '')
+        }));
+
+        setKandidat(formattedData);
+      } catch (err) {
+        setError(err.message);
+        console.error('Error fetching kandidat:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchKandidat();
+  }, []);
 
   const handleVoteClick = (kandidat) => {
     setSelectedKandidat(kandidat);
@@ -30,11 +63,55 @@ const VotingSystem = () => {
     setSelectedKandidat(null);
   };
 
-  const handleFinalConfirm = () => {
-    setShowConfirmPopUp(false);
-    setSelectedKandidat(null);
-    router.push("/vote-success");
+  const handleFinalConfirm = async () => {
+    try {
+      // Di sini nanti bisa ditambahkan logic untuk menyimpan vote ke database
+      // Misalnya: insert ke tabel voting
+      console.log('Voting untuk kandidat:', selectedKandidat);
+      
+      setShowConfirmPopUp(false);
+      setSelectedKandidat(null);
+      router.push("/vote-success");
+    } catch (err) {
+      console.error('Error saving vote:', err);
+      setError(err.message);
+    }
   };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div id="kandidat" className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+          <p className="mt-4 text-gray-600">Memuat data kandidat...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div id="kandidat" className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-600 mb-4">
+            <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Gagal Memuat Data</h3>
+          <p className="text-gray-500">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+          >
+            Coba Lagi
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div id="kandidat" className="min-h-screen bg-gray-50">
@@ -46,7 +123,6 @@ const VotingSystem = () => {
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="text-center">
-        
             <h1 className="text-5xl font-bold text-gray-900 mb-4 tracking-tight">
               Pemilihan Ketua OSIS
             </h1>
@@ -85,15 +161,23 @@ const VotingSystem = () => {
                 <div className="absolute -bottom-10 -left-10 w-24 h-24 bg-white/10 rounded-full"></div>
                 
                 <div className="relative">
-                  <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-4xl font-light shadow-2xl ring-4 ring-white/30 transform group-hover:scale-105 transition-transform duration-300">
-                    {kandidatItem.nama.charAt(0)}
-                  </div>
+                  {kandidatItem.foto ? (
+                    <img 
+                      src={kandidatItem.foto} 
+                      alt={kandidatItem.nama}
+                      className="w-32 h-32 rounded-full object-cover shadow-2xl ring-4 ring-white/30 transform group-hover:scale-105 transition-transform duration-300"
+                    />
+                  ) : (
+                    <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-4xl font-light shadow-2xl ring-4 ring-white/30 transform group-hover:scale-105 transition-transform duration-300">
+                      {kandidatItem.nama.charAt(0)}
+                    </div>
+                  )}
                 </div>
                 
                 {/* Badge nomor urut */}
                 <div className="absolute top-4 right-4">
                   <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white/90 backdrop-blur text-gray-900 text-sm font-semibold shadow-lg">
-                    {kandidatItem.id}
+                    {kandidatItem.no_kandidat}
                   </span>
                 </div>
               </div>
@@ -124,6 +208,11 @@ const VotingSystem = () => {
                       <span className="flex-1">{item}</span>
                     </div>
                   ))}
+                  {kandidatItem.misi.length > 2 && (
+                    <p className="text-xs text-blue-600 text-center mt-2">
+                      +{kandidatItem.misi.length - 2} misi lainnya
+                    </p>
+                  )}
                 </div>
 
                 {/* Tombol Vote */}
@@ -159,9 +248,17 @@ const VotingSystem = () => {
                   </div>
                   
                   <div className="relative z-10 text-center">
-                    <div className="w-48 h-48 mx-auto mb-6 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white text-7xl font-light shadow-2xl ring-4 ring-white/30">
-                      {selectedKandidat.nama.charAt(0)}
-                    </div>
+                    {selectedKandidat.foto ? (
+                      <img 
+                        src={selectedKandidat.foto} 
+                        alt={selectedKandidat.nama}
+                        className="w-48 h-48 mx-auto mb-6 rounded-full object-cover shadow-2xl ring-4 ring-white/30"
+                      />
+                    ) : (
+                      <div className="w-48 h-48 mx-auto mb-6 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white text-7xl font-light shadow-2xl ring-4 ring-white/30">
+                        {selectedKandidat.nama.charAt(0)}
+                      </div>
+                    )}
                     
                     <h3 className="text-3xl font-bold text-white mb-2">
                       {selectedKandidat.nama}
@@ -171,7 +268,7 @@ const VotingSystem = () => {
                     </p>
                     
                     <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-white/10 text-white text-2xl font-semibold border-2 border-white/30">
-                      #{selectedKandidat.id}
+                      #{selectedKandidat.no_kandidat}
                     </div>
                   </div>
 
@@ -285,15 +382,23 @@ const VotingSystem = () => {
                 {/* Informasi Kandidat Singkat */}
                 <div className="bg-gray-50 rounded-xl p-4 mb-6">
                   <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center text-white text-lg font-light">
-                      {selectedKandidat.nama.charAt(0)}
-                    </div>
+                    {selectedKandidat.foto ? (
+                      <img 
+                        src={selectedKandidat.foto} 
+                        alt={selectedKandidat.nama}
+                        className="w-12 h-12 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center text-white text-lg font-light">
+                        {selectedKandidat.nama.charAt(0)}
+                      </div>
+                    )}
                     <div>
                       <h4 className="font-semibold text-gray-900">
                         {selectedKandidat.nama}
                       </h4>
                       <p className="text-xs text-blue-600">
-                        {selectedKandidat.kelas} • #{selectedKandidat.id}
+                        {selectedKandidat.kelas} • #{selectedKandidat.no_kandidat}
                       </p>
                     </div>
                   </div>

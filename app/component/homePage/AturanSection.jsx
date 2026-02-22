@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { aturan } from "../../lib/data/landingData"
+import { aturan } from "../../../lib/data/landingData"
 
 export default function AturanSection() {
     const containerVariants = {
