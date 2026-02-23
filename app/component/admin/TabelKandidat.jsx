@@ -160,14 +160,14 @@ export default function TabelKandidat({ onTambah, onEdit, refreshKey }) {
                                 </tr>
                             </thead>
                             <tbody>
-                                {kandidat.map((k) => (
+                                {kandidat.map((k, index) => (
                                     <tr
                                         key={k.id}
                                         className="border-b border-gray-50 hover:bg-blue-50/50 transition-colors duration-150"
                                     >
                                         <td className="px-6 py-4">
                                             <span className="w-7 h-7 inline-flex items-center justify-center rounded-lg bg-blue-50 text-blue-600 text-xs font-bold border border-blue-100">
-                                                {k.no_kandidat}
+                                                {index + 1}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">
