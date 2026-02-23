@@ -47,15 +47,16 @@ export default function LoginPage() {
         throw new Error("User tidak ditemukan")
       }
 
-      // Simpan data user ke cookie dengan format yang benar
+      // Simpan data user ke cookie dengan format yang benar (TERMASUK USERNAME)
       const userData = {
         id: user.id,
         nisn: user.nisn,
         nipd: user.nipd,
+        username: user.username, // INI PENTING!
         role: user.role
       }
 
-      // Set cookie dengan path yang benar dan httpOnly false (untuk client)
+      // Set cookie dengan path yang benar
       document.cookie = `user=${JSON.stringify(userData)}; path=/; max-age=${60 * 60 * 24 * 7}`; // 7 hari
 
       // Simpan juga ke localStorage sebagai backup

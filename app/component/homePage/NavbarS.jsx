@@ -33,6 +33,7 @@ export default function Navbar() {
       if (userCookie) {
         try {
           const userData = JSON.parse(userCookie.split('=')[1]);
+          console.log('User data from cookie:', userData);
           setUser(userData);
         } catch (e) {
           console.error('Error parsing user cookie:', e);
@@ -43,6 +44,7 @@ export default function Navbar() {
         if (storedUser) {
           try {
             const userData = JSON.parse(storedUser);
+            console.log('User data from localStorage:', userData);
             setUser(userData);
           } catch (e) {
             console.error('Error parsing localStorage user:', e);
@@ -143,11 +145,16 @@ export default function Navbar() {
               className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-full font-medium hover:bg-blue-700 transition-all duration-300 shadow-md hover:shadow-blue-500/30"
             >
               <User size={18} />
-              {user ? user.nisn : "Profil"}
+              {user ? user.username : "Profil"} {/* SEKARANG TAMPIL USERNAME */}
             </button>
 
             {profileOpen && (
               <div className="absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+                <div className="px-4 py-3 bg-blue-50 border-b">
+                  <p className="text-sm font-semibold text-gray-800">{user?.username}</p>
+                  <p className="text-xs text-gray-500">NISN: {user?.nisn}</p>
+                </div>
+                
                 <Link
                   href="/home/profile"
                   className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 transition"
@@ -211,10 +218,20 @@ export default function Navbar() {
             </a>
           ))}
 
-          {/* Profile Menu Items untuk Mobile */}
-          <div className="py-2 px-4 rounded-lg bg-blue-50 text-blue-700 text-center font-semibold">
-            Menu Profil
-          </div>
+          {/* Profile Info dengan Username untuk Mobile */}
+          {user && (
+            <div className="py-3 px-4 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100">
+              <div className="flex items-center gap-3">
+                <div className="bg-blue-600 text-white p-2 rounded-full">
+                  <User size={18} />
+                </div>
+                <div>
+                  <div className="font-semibold text-gray-800">{user.username}</div>
+                  <div className="text-xs text-gray-500">NISN: {user.nisn}</div>
+                </div>
+              </div>
+            </div>
+          )}
 
           <Link
             href="/home/profile"
