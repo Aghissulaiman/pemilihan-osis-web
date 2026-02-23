@@ -168,7 +168,7 @@ export default function Navbar() {
                   className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 transition"
                   onClick={() => setProfileOpen(false)}
                 >
-                  <History size={16} /> Riwayat Voting
+                  <History size={16} /> Voting Anda
                 </Link>
 
                 <Link
