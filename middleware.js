@@ -72,27 +72,28 @@ export function middleware(request) {
   // PROTEKSI BERDASARKAN ROLE
   // ============================================
   
+  // Halaman vote-success boleh diakses oleh siswa dan guru
+  const isVoteSuccessPath = path === '/vote-success'
+
   // Jika user adalah SISWA
   if (user.role === 'siswa') {
-    // Siswa boleh akses SEMUA halaman di dalam folder /home
-    // Contoh: /home, /home/profile, /home/settings, dll
-    if (isHomePath) {
+    // Siswa boleh akses folder /home dan /vote-success
+    if (isHomePath || isVoteSuccessPath) {
       return NextResponse.next()
     }
     
-    // Jika mencoba akses selain folder home (termasuk dashboard), tampilkan 404
+    // Jika mencoba akses selain itu, tampilkan 404
     return NextResponse.rewrite(new URL('/404', request.url))
   }
   
   // Jika user adalah GURU
   if (user.role === 'guru') {
-    // Guru boleh akses SEMUA halaman di dalam folder /home
-    // Contoh: /home, /home/profile, /home/settings, dll
-    if (isHomePath) {
+    // Guru boleh akses folder /home dan /vote-success
+    if (isHomePath || isVoteSuccessPath) {
       return NextResponse.next()
     }
     
-    // Jika mencoba akses selain folder home (termasuk dashboard), tampilkan 404
+    // Jika mencoba akses selain itu, tampilkan 404
     return NextResponse.rewrite(new URL('/404', request.url))
   }
   

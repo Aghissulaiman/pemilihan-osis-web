@@ -10,10 +10,39 @@ const VotingSystem = () => {
   const [selectedKandidat, setSelectedKandidat] = useState(null);
   const [kandidat, setKandidat] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [voting, setVoting] = useState(false);
   const [error, setError] = useState(null);
+  const [sudahVote, setSudahVote] = useState(false);
+  const [voteError, setVoteError] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
   const router = useRouter();
 
-  // Fetch data dari Supabase
+  // Ambil user dari cookie / localStorage
+  useEffect(() => {
+    const getUserData = () => {
+      try {
+        const cookies = document.cookie.split(';');
+        const userCookie = cookies.find(c => c.trim().startsWith('user='));
+        if (userCookie) {
+          const userData = JSON.parse(userCookie.split('=')[1]);
+          setCurrentUser(userData);
+          return userData;
+        }
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          const userData = JSON.parse(storedUser);
+          setCurrentUser(userData);
+          return userData;
+        }
+      } catch (e) {
+        console.error('Error getting user data:', e);
+      }
+      return null;
+    };
+    getUserData();
+  }, []);
+
+  // Fetch data kandidat dari Supabase
   useEffect(() => {
     const fetchKandidat = async () => {
       try {
@@ -25,10 +54,9 @@ const VotingSystem = () => {
 
         if (error) throw error;
 
-        // Format misi dari string ke array (karena di database misi disimpan sebagai text)
         const formattedData = data.map(item => ({
           ...item,
-          misi: item.misi.split('\n').filter(m => m.trim() !== '')
+          misi: item.misi ? item.misi.split('\n').filter(m => m.trim() !== '') : []
         }));
 
         setKandidat(formattedData);
@@ -43,8 +71,30 @@ const VotingSystem = () => {
     fetchKandidat();
   }, []);
 
-  const handleVoteClick = (kandidat) => {
-    setSelectedKandidat(kandidat);
+  // Cek apakah user sudah vote
+  useEffect(() => {
+    const cekSudahVote = async () => {
+      if (!currentUser) return;
+      const userId = String(currentUser.id);
+      const { data, error } = await supabase
+        .from('votes')
+        .select('id')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (error) {
+        console.warn('Cek status vote error:', error.message || error.code);
+        return;
+      }
+      if (data) setSudahVote(true);
+    };
+    cekSudahVote();
+  }, [currentUser]);
+
+  const handleVoteClick = (kandidatItem) => {
+    if (sudahVote) return;
+    setVoteError(null);
+    setSelectedKandidat(kandidatItem);
     setShowDetailPopUp(true);
   };
 
@@ -64,18 +114,96 @@ const VotingSystem = () => {
   };
 
   const handleFinalConfirm = async () => {
-    try {
-      // Di sini nanti bisa ditambahkan logic untuk menyimpan vote ke database
-      // Misalnya: insert ke tabel voting
-      console.log('Voting untuk kandidat:', selectedKandidat);
-      
-      setShowConfirmPopUp(false);
-      setSelectedKandidat(null);
-      router.push("/vote-success");
-    } catch (err) {
-      console.error('Error saving vote:', err);
-      setError(err.message);
+    if (!currentUser) {
+      setVoteError('Data user tidak ditemukan. Silakan login ulang.');
+      return;
     }
+    if (!selectedKandidat) return;
+
+    setVoting(true);
+    setVoteError(null);
+
+    console.log('Current user saat vote:', currentUser);
+    console.log('Kandidat dipilih (full object):', JSON.stringify(selectedKandidat));
+
+    // 1. Double-check apakah sudah vote
+    const userId = String(currentUser.id);
+    const { data: existingVote, error: cekError } = await supabase
+      .from('votes')
+      .select('id')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (cekError) {
+      console.error('Cek vote error:', cekError.message || cekError.code);
+      setVoteError('Gagal memverifikasi status vote: ' + (cekError.message || 'Pastikan tabel votes sudah dibuat di Supabase.'));
+      setVoting(false);
+      return;
+    }
+
+    if (existingVote) {
+      setSudahVote(true);
+      setShowConfirmPopUp(false);
+      setVoteError('Kamu sudah memberikan suara sebelumnya.');
+      setVoting(false);
+      return;
+    }
+
+    // 2. Insert ke tabel votes
+    const insertPayload = {
+      user_id: userId,
+      kandidat_id: selectedKandidat.id,
+    };
+    console.log('Inserting vote payload:', insertPayload);
+
+    const insertResult = await supabase
+      .from('votes')
+      .insert(insertPayload)
+      .select();
+
+    console.log('Insert result:', insertResult);
+
+    const voteInsertError = insertResult.error;
+
+    if (voteInsertError) {
+      const errMsg = voteInsertError.message
+        || voteInsertError.details
+        || voteInsertError.hint
+        || (voteInsertError.code ? 'Error code: ' + voteInsertError.code : null)
+        || 'Unknown error';
+      console.error('Insert vote error:', errMsg, insertResult);
+      setVoteError('Gagal menyimpan suara: ' + errMsg);
+      setVoting(false);
+      return;
+    }
+
+    // 3. Increment suara kandidat dari tabel votes (COUNT per kandidat_id)
+    // Tidak perlu update kolom suara — suara dihitung langsung dari votes
+    // Kalau mau pakai kolom suara di tabel kandidat, jalankan:
+    // ALTER TABLE kandidat ADD COLUMN suara INTEGER NOT NULL DEFAULT 0;
+    // Lalu uncomment kode di bawah ini:
+    /*
+    const { data: kandidatTerbaru, error: fetchErr } = await supabase
+      .from('kandidat')
+      .select('suara')
+      .eq('id', selectedKandidat.id)
+      .single();
+
+    if (!fetchErr && kandidatTerbaru !== null) {
+      const { error: updateErr } = await supabase
+        .from('kandidat')
+        .update({ suara: (kandidatTerbaru.suara ?? 0) + 1 })
+        .eq('id', selectedKandidat.id);
+      if (updateErr) console.warn('Gagal update suara:', updateErr.message);
+    }
+    */
+
+    // 4. Sukses
+    setSudahVote(true);
+    setShowConfirmPopUp(false);
+    setSelectedKandidat(null);
+    setVoting(false);
+    router.push("/vote-success");
   };
 
   // Loading state
@@ -137,6 +265,29 @@ const VotingSystem = () => {
           </div>
         </div>
       </div>
+
+      {/* Banner sudah vote */}
+      {sudahVote && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+          <div className="flex items-center gap-3 bg-green-50 border border-green-200 rounded-2xl px-6 py-4 shadow-sm">
+            <span className="text-2xl">✅</span>
+            <div>
+              <p className="text-green-700 font-semibold text-sm">Kamu sudah memberikan suara!</p>
+              <p className="text-green-600 text-xs mt-0.5">Terima kasih telah menggunakan hak pilihmu. Hasil akan diumumkan setelah pemilihan selesai.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Error message voting */}
+      {voteError && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+          <div className="flex items-center gap-3 bg-red-50 border border-red-200 rounded-2xl px-6 py-4">
+            <span className="text-xl">⚠️</span>
+            <p className="text-red-700 text-sm font-medium">{voteError}</p>
+          </div>
+        </div>
+      )}
 
       {/* Daftar Kandidat dengan desain card premium */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -218,9 +369,14 @@ const VotingSystem = () => {
                 {/* Tombol Vote */}
                 <button
                   onClick={() => handleVoteClick(kandidatItem)}
-                  className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 px-4 rounded-xl hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-300 text-sm font-semibold shadow-lg shadow-blue-600/20"
+                  disabled={sudahVote}
+                  className={`w-full py-3 px-4 rounded-xl text-sm font-semibold transition-all duration-300 shadow-lg ${
+                    sudahVote
+                      ? "bg-gray-200 text-gray-400 cursor-not-allowed shadow-none"
+                      : "bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-blue-600/20"
+                  }`}
                 >
-                  Berikan Suara
+                  {sudahVote ? "Sudah Memilih" : "Berikan Suara"}
                 </button>
               </div>
             </div>
@@ -420,15 +576,22 @@ const VotingSystem = () => {
                 <div className="flex space-x-3">
                   <button
                     onClick={handleCloseConfirmPopUp}
-                    className="flex-1 bg-white border-2 border-gray-200 text-gray-700 py-3 px-4 rounded-xl hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-300 text-sm font-semibold"
+                    disabled={voting}
+                    className="flex-1 bg-white border-2 border-gray-200 text-gray-700 py-3 px-4 rounded-xl hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-300 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Batal
                   </button>
                   <button
                     onClick={handleFinalConfirm}
-                    className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 px-4 rounded-xl hover:from-blue-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-300 text-sm font-semibold shadow-lg shadow-blue-600/20"
+                    disabled={voting}
+                    className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 px-4 rounded-xl hover:from-blue-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-300 text-sm font-semibold shadow-lg shadow-blue-600/20 disabled:opacity-70 disabled:cursor-not-allowed"
                   >
-                    Ya, Saya Yakin
+                    {voting ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                        Menyimpan...
+                      </span>
+                    ) : "Ya, Saya Yakin"}
                   </button>
                 </div>
               </div>
