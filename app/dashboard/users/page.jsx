@@ -107,30 +107,37 @@ export default function UsersTable() {
         setModalLoading(true)
         setModalError("")
 
+        // Validasi username
         if (!form.username.trim()) {
             setModalError("Username tidak boleh kosong")
             setModalLoading(false)
             return
         }
 
-        if (form.role === "siswa" && !form.nisn.trim()) {
-            setModalError("NISN wajib diisi untuk role siswa")
-            setModalLoading(false)
-            return
+        // Validasi berdasarkan role
+        if (form.role === "siswa") {
+            if (!form.nisn.trim()) {
+                setModalError("NISN wajib diisi untuk role siswa")
+                setModalLoading(false)
+                return
+            }
+            // Untuk siswa, nipd boleh kosong
+        } 
+        else if (form.role === "guru") {
+            if (!form.nipd.trim()) {
+                setModalError("NIPD wajib diisi untuk role guru")
+                setModalLoading(false)
+                return
+            }
+            // Untuk guru, nisn boleh kosong
         }
-
-        if (form.role === "guru" && !form.nipd.trim()) {
-            setModalError("NIPD wajib diisi untuk role guru")
-            setModalLoading(false)
-            return
-        }
+        // Untuk admin, nisn dan nipd boleh kosong
 
         const payload = {
             username: form.username.trim(),
             role: form.role,
-            ...(form.role === "siswa" ? { nisn: form.nisn.trim(), nipd: null } : {}),
-            ...(form.role === "guru" ? { nipd: form.nipd.trim(), nisn: null } : {}),
-            ...(form.role === "admin" ? { nisn: null, nipd: null } : {})
+            nisn: form.nisn.trim() || null,  // Bisa kosong untuk guru/admin
+            nipd: form.nipd.trim() || null    // Bisa kosong untuk siswa/admin
         }
 
         let error = null
@@ -199,8 +206,8 @@ export default function UsersTable() {
     // Filter berdasarkan search
     const filteredUsers = getUsersByRole(activeTab).filter(user => 
         user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (user.nisn && user.nisn.includes(searchTerm)) ||
-        (user.nipd && user.nipd.includes(searchTerm))
+        (user.nisn && user.nisn.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (user.nipd && user.nipd.toLowerCase().includes(searchTerm.toLowerCase()))
     )
 
     // Hitung statistik per role
@@ -302,6 +309,7 @@ export default function UsersTable() {
                                 </div>
                             )}
 
+                            {/* Username */}
                             <div>
                                 <label className="block text-[11px] uppercase tracking-wider text-gray-400 font-semibold mb-1.5">
                                     Username <span className="text-red-400">*</span>
@@ -317,6 +325,7 @@ export default function UsersTable() {
                                 />
                             </div>
 
+                            {/* Role */}
                             <div>
                                 <label className="block text-[11px] uppercase tracking-wider text-gray-400 font-semibold mb-1.5">
                                     Role <span className="text-red-400">*</span>
@@ -333,40 +342,48 @@ export default function UsersTable() {
                                 </select>
                             </div>
 
-                            {form.role === "siswa" && (
-                                <div>
-                                    <label className="block text-[11px] uppercase tracking-wider text-gray-400 font-semibold mb-1.5">
-                                        NISN <span className="text-red-400">*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="nisn"
-                                        value={form.nisn}
-                                        onChange={handleInputChange}
-                                        placeholder="Masukkan NISN"
-                                        required
-                                        className="w-full px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
-                                    />
-                                </div>
-                            )}
+                            {/* NISN - untuk semua role, tapi required hanya untuk siswa */}
+                            <div>
+                                <label className="block text-[11px] uppercase tracking-wider text-gray-400 font-semibold mb-1.5">
+                                    NISN 
+                                    {form.role === "siswa" && <span className="text-red-400 ml-1">*</span>}
+                                    <span className="text-gray-300 text-[9px] ml-2">(untuk siswa)</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="nisn"
+                                    value={form.nisn}
+                                    onChange={handleInputChange}
+                                    placeholder={form.role === "siswa" ? "Masukkan NISN" : "NISN (opsional)"}
+                                    required={form.role === "siswa"}
+                                    className="w-full px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                                />
+                            </div>
 
-                            {form.role === "guru" && (
-                                <div>
-                                    <label className="block text-[11px] uppercase tracking-wider text-gray-400 font-semibold mb-1.5">
-                                        NIPD <span className="text-red-400">*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="nipd"
-                                        value={form.nipd}
-                                        onChange={handleInputChange}
-                                        placeholder="Masukkan NIPD"
-                                        required
-                                        className="w-full px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
-                                    />
-                                </div>
-                            )}
+                            {/* NIPD - untuk semua role, tapi required hanya untuk guru */}
+                            <div>
+                                <label className="block text-[11px] uppercase tracking-wider text-gray-400 font-semibold mb-1.5">
+                                    NIPD
+                                    {form.role === "guru" && <span className="text-red-400 ml-1">*</span>}
+                                    <span className="text-gray-300 text-[9px] ml-2">(untuk guru)</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="nipd"
+                                    value={form.nipd}
+                                    onChange={handleInputChange}
+                                    placeholder={form.role === "guru" ? "Masukkan NIPD" : "NIPD (opsional)"}
+                                    required={form.role === "guru"}
+                                    className="w-full px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                                />
+                            </div>
 
+                            {/* Info kecil */}
+                            <div className="text-[10px] text-gray-400 italic">
+                                * Admin boleh tidak mengisi NISN dan NIPD
+                            </div>
+
+                            {/* Buttons */}
                             <div className="flex items-center gap-3 pt-2">
                                 <button
                                     type="button"
@@ -535,7 +552,8 @@ export default function UsersTable() {
                                 <tr className="bg-gray-50 border-b border-gray-100">
                                     <th className="px-6 py-3.5 text-[11px] uppercase tracking-wider text-gray-400 font-semibold">No</th>
                                     <th className="px-6 py-3.5 text-[11px] uppercase tracking-wider text-gray-400 font-semibold">User</th>
-                                    <th className="px-6 py-3.5 text-[11px] uppercase tracking-wider text-gray-400 font-semibold">NISN/NIPD</th>
+                                    <th className="px-6 py-3.5 text-[11px] uppercase tracking-wider text-gray-400 font-semibold">NISN</th>
+                                    <th className="px-6 py-3.5 text-[11px] uppercase tracking-wider text-gray-400 font-semibold">NIPD</th>
                                     <th className="px-6 py-3.5 text-[11px] uppercase tracking-wider text-gray-400 font-semibold">Role</th>
                                     <th className="px-6 py-3.5 text-[11px] uppercase tracking-wider text-gray-400 font-semibold text-center">Status Vote</th>
                                     <th className="px-6 py-3.5 text-[11px] uppercase tracking-wider text-gray-400 font-semibold text-center">Aksi</th>
@@ -557,7 +575,10 @@ export default function UsersTable() {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 text-sm text-gray-600">
-                                            {u.nisn || u.nipd || '-'}
+                                            {u.nisn || '-'}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-gray-600">
+                                            {u.nipd || '-'}
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className={`inline-block text-xs font-semibold px-2.5 py-1 rounded-full border capitalize ${roleBadge(u.role)}`}>
