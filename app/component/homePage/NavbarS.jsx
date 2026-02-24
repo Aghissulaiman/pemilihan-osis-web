@@ -171,13 +171,7 @@ export default function Navbar() {
                   <History size={16} /> Riwayat Voting
                 </Link>
 
-                <Link
-                  href="/home/pengaturan"
-                  className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 transition"
-                  onClick={() => setProfileOpen(false)}
-                >
-                  <Settings size={16} /> Pengaturan
-                </Link>
+             
 
                 {/* Tombol Logout dengan fungsi handleLogout */}
                 <button
