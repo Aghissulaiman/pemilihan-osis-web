@@ -23,7 +23,7 @@ export default function VoteSuccessPage() {
                     <CheckCircle size={52} className="text-blue-600" />
                 </div>
 
-                <h2 className="text-3xl font-bold text-white z-10">Vote Berhasil! 🎉</h2>
+                <h2 className="text-3xl font-bold text-white z-10">Vote Berhasil!</h2>
                 <p className="text-blue-100 text-sm mt-2 max-w-xs leading-relaxed z-10">
                     Suaramu telah berhasil dicatat. Terima kasih telah menggunakan hak pilihmu!
                 </p>
@@ -37,7 +37,7 @@ export default function VoteSuccessPage() {
                         Hasil pemilihan akan diumumkan setelah proses voting selesai.
                     </p>
                     <div className="mt-4 py-3 px-4 bg-blue-50 rounded-xl border border-blue-100">
-                        <p className="text-blue-600 text-sm font-medium">✅ Status: Suara Tercatat</p>
+                        <p className="text-blue-600 text-sm font-medium">Status: Suara Tercatat</p>
                     </div>
                 </div>
 
