@@ -1,130 +1,157 @@
+// app/component/admin/Sidebar.jsx
 "use client"
 
-import { useRouter } from "next/navigation"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import {
+  LayoutDashboard,
+  Users,
+  UserCircle,
+  LogOut,
+  ChevronLeft,
+  ChevronRight,
+  Vote // <-- TAMBAHKAN IMPORT INI
+} from "lucide-react"
 
-const menuItems = [
-    { id: "dashboard", label: "Dashboard", icon: "📊" },
-    { id: "kandidat", label: "Kandidat", icon: "👥" },
-    { id: "users", label: "Users", icon: "🧑‍🎓" },
-]
+export default function Sidebar({ collapsed, setCollapsed, user }) {
+  const pathname = usePathname()
 
-export default function Sidebar({
-    activeMenu,
-    setActiveMenu,
-    collapsed,
-    setCollapsed,
-    user,
-}) {
-    const router = useRouter()
-
-    const handleLogout = () => {
-        // Hapus cookie user
-        document.cookie = "user=; path=/; max-age=0"
-        // Hapus localStorage
-        localStorage.removeItem("user")
-        // Redirect ke landing page
-        router.push("/")
+  const menuItems = [
+    {
+      id: "dashboard",
+      label: "Dashboard",
+      icon: LayoutDashboard,
+      href: "/dashboard"
+    },
+    {
+      id: "kandidat",
+      label: "Kandidat",
+      icon: Users,
+      href: "/dashboard/kandidat"
+    },
+    {
+      id: "voting", // <-- TAMBAHKAN MENU INI
+      label: "Detail Voting",
+      icon: Vote,
+      href: "/dashboard/voting"
+    },
+    {
+      id: "users",
+      label: "Pengguna",
+      icon: UserCircle,
+      href: "/dashboard/users"
     }
+  ]
 
-    return (
-        <aside
-            className={`
-                fixed top-0 left-0 h-screen z-40
-                bg-white border-r border-gray-200
-                flex flex-col shadow-lg
-                transition-all duration-300
-                ${collapsed ? "w-20" : "w-64"}
-            `}
+  const handleLogout = () => {
+    document.cookie = 'user=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT'
+    localStorage.removeItem('user')
+    window.location.href = '/'
+  }
+
+  const isActive = (href) => {
+    if (href === '/dashboard') {
+      return pathname === '/dashboard'
+    }
+    return pathname.startsWith(href)
+  }
+
+  return (
+    <aside
+      className={`
+        fixed left-0 top-0 h-screen bg-white border-r border-gray-200
+        transition-all duration-300 z-50
+        ${collapsed ? "w-20" : "w-64"}
+      `}
+    >
+      {/* Logo */}
+      <div className="h-16 flex items-center px-4 border-b border-gray-200">
+        <div className={`
+          font-bold text-xl text-blue-600
+          ${collapsed ? "hidden" : "block"}
+        `}>
+          Admin Panel
+        </div>
+        <div className={`
+          font-bold text-xl text-blue-600 mx-auto
+          ${collapsed ? "block" : "hidden"}
+        `}>
+          AP
+        </div>
+      </div>
+
+      {/* Toggle Button */}
+      <button
+        onClick={() => setCollapsed(!collapsed)}
+        className="absolute -right-3 top-20 bg-white border border-gray-200 rounded-full p-1 hover:bg-gray-50"
+      >
+        {collapsed ? (
+          <ChevronRight className="w-4 h-4 text-gray-600" />
+        ) : (
+          <ChevronLeft className="w-4 h-4 text-gray-600" />
+        )}
+      </button>
+
+      {/* Menu Items */}
+      <nav className="p-4 space-y-2">
+        {menuItems.map((item) => {
+          const Icon = item.icon
+          const active = isActive(item.href)
+          
+          return (
+            <Link
+              key={item.id}
+              href={item.href}
+              className={`
+                flex items-center px-4 py-3 rounded-lg transition-colors
+                ${active 
+                  ? "bg-blue-50 text-blue-600" 
+                  : "text-gray-700 hover:bg-gray-100"
+                }
+                ${collapsed ? "justify-center" : "space-x-3"}
+              `}
+            >
+              <Icon className={`w-5 h-5 ${active ? "text-blue-600" : "text-gray-500"}`} />
+              {!collapsed && <span>{item.label}</span>}
+            </Link>
+          )
+        })}
+      </nav>
+
+      {/* User Info & Logout */}
+      <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
+        <div className={`
+          flex items-center mb-4
+          ${collapsed ? "justify-center" : "space-x-3"}
+        `}>
+          <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+            <span className="text-white text-sm font-medium">
+              {user?.nama?.[0] || user?.username?.[0] || 'A'}
+            </span>
+          </div>
+          {!collapsed && (
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-900 truncate">
+                {user?.nama || user?.username || 'Admin'}
+              </p>
+              <p className="text-xs text-gray-500 truncate">
+                {user?.email || ''}
+              </p>
+            </div>
+          )}
+        </div>
+
+        <button
+          onClick={handleLogout}
+          className={`
+            flex items-center w-full px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors
+            ${collapsed ? "justify-center" : "space-x-3"}
+          `}
         >
-            {/* Header / Logo */}
-            <div className="flex items-center justify-between px-4 py-5 border-b border-gray-100">
-                {!collapsed && (
-                    <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-blue-400 flex items-center justify-center shadow-sm">
-                            <span className="text-lg">🗳️</span>
-                        </div>
-                        <div>
-                            <h1 className="text-gray-900 font-bold text-sm leading-tight">Dashboard</h1>
-                            <p className="text-gray-400 text-[10px]">Pemilihan OSIS</p>
-                        </div>
-                    </div>
-                )}
-                {collapsed && (
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-blue-400 flex items-center justify-center shadow-sm mx-auto">
-                        <span className="text-lg">🗳️</span>
-                    </div>
-                )}
-                {!collapsed && (
-                    <button
-                        onClick={() => setCollapsed(!collapsed)}
-                        className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-blue-50 hover:text-blue-600 text-gray-500 flex items-center justify-center transition-all duration-200 text-sm"
-                        title="Collapse sidebar"
-                    >
-                        ◀
-                    </button>
-                )}
-            </div>
-
-            {/* Expand button when collapsed */}
-            {collapsed && (
-                <div className="flex justify-center py-3 border-b border-gray-100">
-                    <button
-                        onClick={() => setCollapsed(false)}
-                        className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-blue-50 hover:text-blue-600 text-gray-500 flex items-center justify-center transition-all duration-200 text-sm rotate-180"
-                        title="Expand sidebar"
-                    >
-                        ◀
-                    </button>
-                </div>
-            )}
-
-            {/* User info */}
-            {!collapsed && user && (
-                <div className="mx-3 mt-4 mb-2 px-3 py-2.5 bg-blue-50 rounded-xl border border-blue-100">
-                    <p className="text-blue-700 text-xs font-semibold truncate">{user.username || "Admin"}</p>
-                    <p className="text-blue-400 text-[10px] capitalize">{user.role}</p>
-                </div>
-            )}
-
-            {/* Menu */}
-            <nav className="flex-1 px-3 py-3 space-y-1">
-                {menuItems.map(item => (
-                    <button
-                        key={item.id}
-                        onClick={() => setActiveMenu(item.id)}
-                        title={collapsed ? item.label : ""}
-                        className={`
-                            w-full flex items-center gap-3 px-3 py-2.5 rounded-xl
-                            font-medium text-sm transition-all duration-200
-                            ${activeMenu === item.id
-                                ? "bg-blue-600 text-white shadow-sm shadow-blue-200"
-                                : "text-gray-500 hover:bg-blue-50 hover:text-blue-600"}
-                            ${collapsed ? "justify-center" : ""}
-                        `}
-                    >
-                        <span className="text-base flex-shrink-0">{item.icon}</span>
-                        {!collapsed && <span>{item.label}</span>}
-                    </button>
-                ))}
-            </nav>
-
-            {/* Logout Button */}
-            <div className="px-3 pb-4 pt-2 border-t border-gray-100">
-                <button
-                    onClick={handleLogout}
-                    title={collapsed ? "Keluar" : ""}
-                    className={`
-                        w-full flex items-center gap-3 px-3 py-2.5 rounded-xl
-                        font-medium text-sm text-gray-500
-                        hover:bg-red-50 hover:text-red-600
-                        transition-all duration-200
-                        ${collapsed ? "justify-center" : ""}
-                    `}
-                >
-                    <span className="text-base flex-shrink-0">🚪</span>
-                    {!collapsed && <span>Keluar</span>}
-                </button>
-            </div>
-        </aside>
-    )
+          <LogOut className="w-5 h-5" />
+          {!collapsed && <span>Keluar</span>}
+        </button>
+      </div>
+    </aside>
+  )
 }
