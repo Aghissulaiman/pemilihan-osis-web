@@ -3,11 +3,11 @@
 import { useEffect, useState } from "react";
 import SplashScreen from "./component/SplashScreen";
 
-import Footer from "./component/landingPage/Footer";
-import Hero from "./component/landingPage/Hero";
-import Informasi from "./component/landingPage/Informasi";
-import Navbar from "./component/landingPage/Navbar";
-import Tentang from "./component/landingPage/Tentang";
+import Footer from "./component/landingPage/Footer.jsx";
+import Hero from "./component/landingPage/Hero.jsx";
+import Informasi from "./component/landingPage/Informasi.jsx";
+import Navbar from "./component/landingPage/Navbar.jsx";
+import Tentang from "./component/landingPage/Tentang.jsx";
 
 export default function LandingPage() {
   const [showSplash, setShowSplash] = useState(true);
